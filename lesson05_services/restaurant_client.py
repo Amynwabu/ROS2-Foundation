@@ -1,61 +1,50 @@
 #!/usr/bin/env python3
-
+import argparse
+import sys
 import rclpy
 from rclpy.node import Node
-from my_interfaces.srv import TakeOrder
-import sys
+from rclpy.utilities import remove_ros_args
+from restaurant_interfaces.srv import TakeOrder
 
-
-class RestaurantClient(Node):
+class OrderClient(Node):
     def __init__(self):
-        super().__init__('restaurant_client')
-        
-        # CREATE A CLIENT FOR THE SERVICE
-        self.cli = self.create_client(TakeOrder, '/take_order')
-        
-        # Wait for server to be ready
-        while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('⏳ Waiting for service /take_order...')
-        
-        self.get_logger().info('✅ Connected to restaurant!')
-    
-    def send_request(self, item_name, quantity):
-        # Create request
-        request = TakeOrder.Request()
-        request.item_name = item_name
-        request.quantity = quantity
-        
-        self.get_logger().info(f'🍽️  Placing order: {quantity}x {item_name}')
-        
-        # Send request asynchronously
-        future = self.cli.call_async(request)
-        rclpy.spin_until_future_complete(self, future)
-        
-        if future.result() is not None:
-            response = future.result()
-            if response.accepted:
-                self.get_logger().info(f'✅ {response.message}')
-            else:
-                self.get_logger().info(f'❌ {response.message}')
-        else:
-            self.get_logger().error('Service call failed!')
+        super().__init__('order_client')
+        self.cli = self.create_client(TakeOrder, 'take_order')
 
+    def send_order(self, item, quantity):
+        request = TakeOrder.Request()
+        request.item_name = item
+        request.quantity = quantity
+        return self.cli.call_async(request)
 
 def main(args=None):
+    argv = sys.argv if args is None else ['order_client'] + list(args)
+    parser = argparse.ArgumentParser(description='Submit a restaurant order')
+    parser.add_argument('item')
+    parser.add_argument('quantity', type=int)
+    options = parser.parse_args(remove_ros_args(args=argv)[1:])
+    if options.quantity <= 0:
+        parser.error('quantity must be positive')
     rclpy.init(args=args)
-    
-    # Get item and quantity from command line
-    if len(sys.argv) < 3:
-        print("Usage: ros2 run test2_py_pkg restaurant_client <item> <quantity>")
-        print("Example: ros2 run test2_py_pkg restaurant_client burger 2")
-        return
-    
-    item = sys.argv[1]          # e.g., 'burger'
-    quantity = int(sys.argv[2]) # e.g., 2
-    
-    client = RestaurantClient()
-    client.send_request(item, quantity)
-
+    node = OrderClient()
+    try:
+        while rclpy.ok() and not node.cli.wait_for_service(timeout_sec=1.0):
+            node.get_logger().info('Waiting for the restaurant...')
+        if not rclpy.ok():
+            return
+        future = node.send_order(options.item, options.quantity)
+        rclpy.spin_until_future_complete(node, future)
+        response = future.result()
+        if response is not None:
+            node.get_logger().info(f'{response.accepted}: {response.message}')
+        else:
+            node.get_logger().error('No service response received')
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

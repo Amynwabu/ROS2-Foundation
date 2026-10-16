@@ -1,16 +1,13 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>my_interfaces</name>
+  <name>restaurant_interfaces</name>
   <version>0.0.1</version>
-  <description>Custom ROS2 interfaces for the restaurant system</description>
-  <maintainer email="student@example.com">Student</maintainer>
-  <license>Apache License 2.0</license>
-
-  <!-- ADD THESE LINES -->
+  <description>Restaurant service interfaces for the ROS 2 foundation workshop.</description>
+  <maintainer email="maintainer@example.com">Workshop maintainer</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>rosidl_default_generators</build_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
-
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <export><build_type>ament_cmake</build_type></export>
 </package>

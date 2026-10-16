@@ -1,55 +1,32 @@
 #!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
-from my_interfaces.srv import TakeOrder
-# Import the custom TakeOrder service we just defined
+from std_msgs.msg import String
+from restaurant_interfaces.srv import TakeOrder
 
+MENU = ('burger', 'salad')
 
 class RestaurantServer(Node):
     def __init__(self):
         super().__init__('restaurant_server')
-        
-        # CREATE THE SERVICE
-        # create_service() takes 3 arguments:
-        #   1. Service type (TakeOrder)
-        #   2. Service name ('/take_order')
-        #   3. Callback function (handle_order)
-        
-        self.srv = self.create_service(
-            TakeOrder,
-            '/take_order',
-            self.handle_order
-        )
-        
-        self.get_logger().info('🍽️  Restaurant is OPEN! Waiting for orders...')
-    
-    def handle_order(self, request, response):
-        # SERVER CALLBACK
-        # Called when a client sends a request
-        # request: Contains the data the client sent
-        # response: Object we fill with the response data
-        
-        self.get_logger().info(f'📋 Incoming request: {request.quantity}x {request.item_name}')
-        
-        # Business logic: Check if we have the item
-        if request.item_name.lower() == 'burger':
-            response.accepted = True
-            response.message = f'✅ Delicious! {request.quantity} burgers coming up!'
-        
-        elif request.item_name.lower() == 'salad':
-            response.accepted = True
-            response.message = '✅ Healthy choice! Salad on the way.'
-        
-        else:
-            response.accepted = False
-            response.message = f'❌ Sorry, we do not serve {request.item_name}.'
-        
-        self.get_logger().info(f'📤 Sending response: {response.message}')
-        
-        return response
-        # MUST return the response object
+        self.declare_parameter('max_quantity', 5)
+        self.pub = self.create_publisher(String, 'orders', 10)
+        self.srv = self.create_service(TakeOrder, 'take_order', self.handle_order)
 
+    def handle_order(self, request, response):
+        item = request.item_name.strip().lower()
+        limit = self.get_parameter('max_quantity').value
+        response.accepted = item in MENU and 0 < request.quantity <= limit
+        if response.accepted:
+            order = f'{request.quantity} x {item}'
+            self.pub.publish(String(data=order))
+            response.message = f'{order} coming up'
+        elif item not in MENU:
+            response.message = f'Sorry, we do not serve {item}'
+        else:
+            response.message = f'Quantity must be between 1 and {limit}'
+        self.get_logger().info(response.message)
+        return response
 
 def main(args=None):
     rclpy.init(args=args)
@@ -60,8 +37,8 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
-
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

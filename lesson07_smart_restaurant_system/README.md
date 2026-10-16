@@ -1,62 +1,24 @@
-# Lesson 07: Smart Restaurant System - Complete Project
+# Lesson 07: Smart Restaurant System — assignment, slide 37
 
-## Project Overview
+Build a fresh system using the lecture patterns, not an independent periodic publisher alongside a disconnected service.
 
-Build a complete ROS2 robotics system that integrates ALL previous lessons:
+## Required architecture
 
-- **Lesson 04**: Publisher/Subscriber nodes (Waiter, Chef)
-- **Lesson 05**: Custom services (Restaurant Manager)
-- **Lesson 06**: Launch files (Orchestrate the system)
-
-## System Architecture
-
-```
-Waiter (Publisher)
-    ↓
-    └→ /orders topic
-        ↓
-        └→ Chef (Subscriber)
-
-Manager (Service Server)
-    ↓
-    └→ /add_order service
-        ↓
-        └→ Restaurant System
-
-Launch File
-    ↓
-    └→ Starts all nodes with one command!
+```text
+waiter (service client) -- /take_order --> manager (service server)
+                                              |
+                                       accepted orders
+                                              |
+                                           /orders
+                                              |
+                                       chef (subscriber)
 ```
 
-## Project Structure
+## Packages
 
-```
-ros2_ws/src/
-├── restaurant_interfaces/  (CMake package)
-│   ├── srv/
-│   │   └── AddOrder.srv
-│   ├── CMakeLists.txt
-│   └── package.xml
-│
-└── restaurant_system/  (Python package)
-    ├── restaurant_system/
-    │   ├── __init__.py
-    │   ├── waiter.py        (Publisher)
-    │   ├── chef.py          (Subscriber)
-    │   └── manager.py       (Service Server)
-    ├── launch/
-    │   └── restaurant.launch.py
-    ├── setup.py
-    └── package.xml
-```
+Reuse restaurant_interfaces (ament_cmake) from lesson05, containing srv/TakeOrder.srv:
 
-## Assignment Tasks
-
-### Task 1: Define Custom Service
-
-File: `restaurant_interfaces/srv/AddOrder.srv`
-
-```
+```text
 string item_name
 int32 quantity
 ---
@@ -64,27 +26,46 @@ bool accepted
 string message
 ```
 
-### Task 2: Implement Waiter (Publisher)
+Create restaurant_system as an ament_python package:
 
-Publishes orders every 2 seconds to `/orders` topic
-- Announce `"Order #X: Burger"`
-- Log each order
+```bash
+source /opt/ros/humble/setup.bash
+cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_python restaurant_system --dependencies rclpy std_msgs restaurant_interfaces
+```
 
-### Task 3: Implement Chef (Subscriber)
+Required structure:
 
-Listens to `/orders` topic
-- Receives orders
-- Logs receipt
-- Logs "Cooking..."
+```text
+restaurant_system/
+  package.xml
+  setup.py
+  setup.cfg
+  resource/restaurant_system
+  restaurant_system/
+    __init__.py
+    waiter.py
+    manager.py
+    chef.py
+  launch/restaurant.launch.py
+```
 
-### Task 4: Implement Manager (Service Server)
+## Tasks
 
-Handles `/add_order` service requests
-- Accept specific item requests (burger, pizza, salad)
-- Reject unknown items
-- Return response message
+1. Implement waiter.py as a one-shot service client accepting item and quantity from the command line. Adapt lesson05 restaurant_client.py; import TakeOrder from restaurant_interfaces.srv and call /take_order. Wait for the service and log the response. Do not create a periodic order publisher here.
+2. Implement manager.py as the service server AND publisher. Adapt lesson05 restaurant_server.py, change its node name to manager, accept burger/salad with a valid quantity, reject unknown items, and publish each accepted order once on /orders. Rejected orders must not be published.
+3. Implement chef.py as a std_msgs/String subscriber to /orders, logging each order. Adapt the lesson04 subscriber.
+4. Register the three executables in setup.py:
 
-### Task 5: Create Launch File
+```python
+entry_points={'console_scripts': [
+    'waiter = restaurant_system.waiter:main',
+    'manager = restaurant_system.manager:main',
+    'chef = restaurant_system.chef:main',
+]},
+```
+
+5. Create launch/restaurant.launch.py:
 
 ```python
 from launch import LaunchDescription
@@ -92,88 +73,47 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        Node(package='restaurant_system', executable='chef'),
-        Node(package='restaurant_system', executable='manager'),
-        Node(package='restaurant_system', executable='waiter'),
+        Node(package='restaurant_system', executable='manager', output='screen'),
+        Node(package='restaurant_system', executable='chef', output='screen'),
     ])
 ```
 
-## Build & Run
+6. Install the launch file using setup.py data_files as in lesson06. Add launch and launch_ros as exec_depend entries in restaurant_system/package.xml. Keep rclpy, std_msgs and restaurant_interfaces dependencies. The launch starts the two persistent nodes only; run the waiter separately with arguments.
+
+## Build and success test
+
+Stop the lecture restaurant_server and periodic waiter first so they cannot interfere with the assignment graph.
 
 ```bash
-# Build interfaces first
-colcon build --packages-select restaurant_interfaces
-
-# Build system package
-colcon build --packages-select restaurant_system
+cd ~/ros2_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install --packages-up-to restaurant_system
 source install/setup.bash
-
-# Run with launch file
 ros2 launch restaurant_system restaurant.launch.py
 ```
 
-## Verification
-
-In separate terminals:
+In separately sourced terminals, start observations before submitting orders:
 
 ```bash
-# List active topics
-ros2 topic list
-
-# Echo orders
+ros2 node list
 ros2 topic echo /orders
-
-# Call service
-ros2 service call /add_order restaurant_interfaces/srv/AddOrder '{item_name: "burger", quantity: 2}'
+rqt_graph
 ```
 
-## Learning Outcomes
+Then run the slide's success test:
 
-After completing this project, you will have:
-
-✓ Implemented publisher and subscriber nodes
-✓ Created custom service definitions  
-✓ Built a service server and client
-✓ Orchestrated multiple nodes with launch files
-✓ Integrated ROS2 communication patterns
-✓ Built a complete robotics system
-
-## Expected Output
-
-```
-[waiter]: Order #1: Burger
-[manager]: Restaurant Server started
-[chef]: Received order: Order #1: Burger
-[chef]: Starting to cook...
-[manager]: Service call received
+```bash
+ros2 run restaurant_system waiter burger 2
 ```
 
-## Extensions (Optional)
+Expected: accepted service response, one /orders message and a chef log for 2 x burger. Submit an unknown item; expect rejection and no corresponding chef order. Inspect the service separately with:
 
-1. Add more food items to the menu
-2. Implement cooking time simulation
-3. Add multiple chefs subscribing to orders
-4. Create a CLI client to submit orders via service
-5. Add logging to a file
-6. Create a node that monitors restaurant status
+```bash
+ros2 service call /take_order restaurant_interfaces/srv/TakeOrder "{item_name: burger, quantity: 2}"
+```
 
-## Troubleshooting
+## Stretch goals
 
-**Nodes don't communicate**: Verify topic/service names match
-**Build fails**: Ensure interfaces package is built first
-**Service not responding**: Check manager node is running
+Add a menu parameter and explain the QoS choices, or implement CookOrder as an action with progress feedback and cancellation. Use max_quantity from the lecture example to demonstrate runtime configuration if desired.
 
-## Congratulations!
-
-You've completed the ROS2 MSc Applied AI course!
-
-### Next Steps:
-
-- Explore [ROS2 Humble Documentation](https://docs.ros.org/en/humble/)
-- Build your own robot projects
-- Learn about advanced topics:
-  - Timers and callbacks
-  - Parameter server
-  - Actions
-  - TF (Transform Framework)
-  - Navigation Stack
+Submit source packages, evidence of the running graph and accepted/rejected cases, and a short justification of topic versus service versus action. This is an assignment brief, not a supplied completed assessment solution.
