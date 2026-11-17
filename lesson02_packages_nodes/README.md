@@ -142,6 +142,8 @@ Create a new file: mynode.py
 
 ```
 
+The complete code is in this folder: `lesson02_packages_nodes/mynode.py` (a matching `setup.py` is alongside it).
+
 
 ## Registering Your Node as an Entry Point
 
@@ -187,10 +189,10 @@ ros2 run test2_py_pkg my_first_node
 ### Expected Output
 
 ```
-[INFO] [1234567890.123456789] [test_node]: Test Node Started!
-[INFO] [1234567890.223456789] [test_node]: Hello from Test Node! Count: 1
-[INFO] [1234567890.323456789] [test_node]: Hello from Test Node! Count: 2
-[INFO] [1234567890.423456789] [test_node]: Hello from Test Node! Count: 3
+[INFO] [1234567890.123456789] [my_first_node]: Hello from My First Node!
+[INFO] [1234567890.223456789] [my_first_node]: Counter: 1
+[INFO] [1234567890.323456789] [my_first_node]: Counter: 2
+[INFO] [1234567890.423456789] [my_first_node]: Counter: 3
 ...
 ```
 
@@ -220,7 +222,7 @@ ros2 pkg create --build-type ament_python my_package
 ros2 node list
 
 # Get information about a node
-ros2 node info /test_node
+ros2 node info /my_first_node
 
 # Run a node
 ros2 run package_name node_name
@@ -302,7 +304,7 @@ ros2 run test2_py_pkg my_first_node --ros-args --log-level DEBUG
 
 # List all nodes and their topics
 ros2 node list
-ros2 node info /test_node
+ros2 node info /my_first_node
 ```
 
 ## Practice Exercise

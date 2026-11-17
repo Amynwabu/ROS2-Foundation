@@ -35,12 +35,16 @@ def main(args=None):
     # Create an instance of our node
     node = MyFirstNode()
     
-    # Keep the node running and processing callbacks
-    rclpy.spin(node)
-    
-    # Cleanup when done
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        # Keep the node running and processing callbacks
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        # Ctrl+C: shut down quietly
+        pass
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

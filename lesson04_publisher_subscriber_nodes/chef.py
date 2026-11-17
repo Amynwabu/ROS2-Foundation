@@ -61,7 +61,8 @@ def main(args=None):
     finally:
         # Clean up
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':

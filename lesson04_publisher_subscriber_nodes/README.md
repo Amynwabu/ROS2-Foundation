@@ -9,9 +9,9 @@ Waiter (Publisher)              Topic (/orders)              Chef (Subscriber)
     |                                                              |
     +---> announces order "Order #1: Burger" --->
     |                                                    listens & receives
-    +---> announces order "Order #2: Pizza"  --->
+    +---> announces order "Order #2: Burger" --->
     |                                                    starts cooking
-    +---> announces order "Order #3: Salad"  --->
+    +---> announces order "Order #3: Burger" --->
 ```
 
 ## Key Concepts
@@ -86,7 +86,9 @@ Expected output:
 [INFO] [waiter]: Announcing: Order #2: Burger
 [INFO] [waiter]: Announcing: Order #3: Burger
 ...
+```
 
+Press `Ctrl+C` to stop; the node shuts down quietly.
 
 ### Step 5: Run the Subscriber (Terminal 2)
 ```bash

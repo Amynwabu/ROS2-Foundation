@@ -19,8 +19,8 @@ This lesson covers ROS2 environment setup and workspace creation.
 Verify your ROS2 installation is working:
 
 ```bash
-# Check ROS2 version
-ros2 --version
+# Check the ROS2 distribution (should print: humble)
+echo $ROS_DISTRO
 
 # Check available ROS2 commands
 ros2 --help
@@ -70,7 +70,7 @@ echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
 ## Your workspace structure
 
 ```
-os2_ws/                    # Your workspace root
+ros2_ws/                   # Your workspace root
 ├── src/                    # Where all your source code lives
 │   └── test2_py_pkg/       # Your package (contains mynode.py, setup.py, etc.)
 ├── build/                  # Temporary files during compilation (auto-generated)
@@ -83,7 +83,7 @@ os2_ws/                    # Your workspace root
 Verify your workspace is properly set up:
 
 ```bash
-# Check ROS2 environment variables
+# Check ROS2 environment variables (ROS_DISTRO should be humble)
 echo $ROS_DISTRO
 echo $AMENT_PREFIX_PATH
 ```

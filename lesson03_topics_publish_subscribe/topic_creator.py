@@ -46,12 +46,17 @@ def main(args=None):
     # Create the node
     node = NewsPublisher()
     
-    # Keep the node running
-    rclpy.spin(node)
-    
-    # Cleanup
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        # Keep the node running
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        # Ctrl+C: shut down quietly
+        pass
+    finally:
+        # Cleanup (rclpy may already be shut down by the Ctrl+C handler)
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

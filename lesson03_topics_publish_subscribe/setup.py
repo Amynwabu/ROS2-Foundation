@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'my_first_node = test2_py_pkg.mynode:main',
-            'create_topic = test2_py_pkg.topic_creator:main',        ],
+            'create_topic = test2_py_pkg.topic_creator:main',
+        ],
     },
 )

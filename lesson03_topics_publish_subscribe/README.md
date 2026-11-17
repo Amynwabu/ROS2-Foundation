@@ -62,7 +62,7 @@ ros2 topic list
 ### Issue: "Topic not created"
 
 Topics are created automatically when the first publisher or subscriber is created. If you don't see a topic:
-1. Ensure both publisher and subscriber are running
+1. Ensure the publisher is running (`ros2 run test2_py_pkg create_topic`)
 2. Check node names with `ros2 node list`
 3. Verify topic name spelling
 

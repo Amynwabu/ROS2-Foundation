@@ -38,9 +38,9 @@ colcon build --symlink-install --packages-up-to test2_py_pkg
 source install/setup.bash
 ```
 
-Check entry points for 'No executable found'; check topic type, name and QoS for missing messages. See lesson06_launch_files for verification commands.
+If a build after switching between plain and `--symlink-install` fails with a missing-file error, rebuild, or delete that package's `build/` and `install/` folders and build again. Check entry points for 'No executable found'; check topic type, name and QoS for missing messages. See lesson06_launch_files for verification commands.
 
-These changes have not been runtime-tested in ROS 2. Complete the verification exercises on a Humble installation before teaching.
+The lesson 01-07 instructions were run end to end on ROS 2 Humble (RoboStack build, Python 3.11) on 17 November 2026: build, run, topics, services, launch, parameters, QoS exercise and the lesson 07 success test. Please still repeat them once on Ubuntu 22.04 with the apt Humble packages before teaching, and run `rosdep install` as shown above (not part of that test).
 
 ## Contributing and licence
 
