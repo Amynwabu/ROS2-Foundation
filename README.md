@@ -1,6 +1,6 @@
 # ROS2 Foundation - Teaching Materials
 
-Teaching materials for MSc Applied AI students at Cranfield University. Target environment: ROS 2 Humble on Ubuntu 22.04, with Python and Linux terminal familiarity.
+Teaching materials: Target environment: ROS 2 Humble on Ubuntu 22.04, with Python and Linux terminal familiarity.
 
 ## Start here
 
