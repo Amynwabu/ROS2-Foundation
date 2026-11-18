@@ -27,6 +27,24 @@ The existing ros2_ws.zip is a legacy snapshot and has NOT been synchronised or v
 
 Use TEACHING_SCRIPT.md as supplementary introductory narration; the lesson05–07 instructions take precedence for service names, launch and assessment.
 
+## Run it in the browser (no installation)
+
+**GitHub Codespaces:** on the repository page choose Code, then Codespaces, then Create codespace on main. The first build takes a few minutes. Then:
+
+```bash
+echo $ROS_DISTRO        # should print: humble
+ls ~/ros2_ws/src        # empty workspace, ready for lesson 01
+```
+
+- The terminal in the browser is all you need for lessons 01-07.
+- For graphical tools such as `rqt_graph`, open the forwarded port 6080 (Ports tab) and use the password `ros2`.
+- Stop the codespace when you finish; idle time counts against the free monthly allowance.
+- Teachers: make this repository a template so each student gets their own copy.
+
+**Windows without Codespaces:** run `wsl --install -d Ubuntu-22.04` in PowerShell, then install `ros-humble-desktop` with apt as in the official ROS 2 Humble guide.
+
+**VS Code with Docker:** open the folder and choose Reopen in Container (uses `.devcontainer/`).
+
 ## Build and troubleshoot
 
 Build from ~/ros2_ws, never src. Source /opt/ros/humble/setup.bash and the workspace overlay in every terminal. After creating the interface and lecture packages, use:
